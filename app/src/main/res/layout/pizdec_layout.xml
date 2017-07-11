@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/darker_gray">
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/cameraPreview">
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="75dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left|top"
+        android:background="#86000000"
+        android:visibility="visible"
+        android:id="@+id/frameLayout" >
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_gravity="left|top"
+        android:background="#86000000"
+        android:visibility="visible"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/frameLayout2"
+        android:layout_marginLeft="75dp"
+        android:layout_marginRight="75dp" />
+
+    <FrameLayout
+        android:layout_width="75dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left|top"
+        android:background="#86000000"
+        android:visibility="visible"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/frameLayout3" >
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_gravity="left|center_vertical"
+        android:background="#86000000"
+        android:visibility="visible"
+        android:id="@+id/frameLayout4"
+        android:layout_marginLeft="75dp"
+        android:layout_marginRight="75dp">
+
+    </FrameLayout>
+
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#c8000000"
+        android:id="@+id/shtrih_layout_id"
+        android:visibility="invisible">
+
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="180dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="124dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/ivShtrihCode" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAlignment="center"
+            android:textSize="28sp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textColor="#ffffff"
+            android:id="@+id/tvShtrihCode"
+            android:layout_below="@+id/ivShtrihCode" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/tvShtrihCode">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Повторить"
+                android:id="@+id/repeat"
+                android:layout_weight="1"
+                android:textColor="#ffffff"
+                android:background="#00ffffff" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Продолжить"
+                android:id="@+id/contin"
+                android:layout_weight="1"
+                android:textColor="#ffffff"
+                android:background="#00ffffff" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

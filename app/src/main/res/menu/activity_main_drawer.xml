@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/tasks"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Поручения"
+            />
+        <item
+            android:id="@+id/activs"
+            android:icon="@drawable/ic_activ"
+            android:title="Активы" />
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_menu_send"
+            android:title="Номенклатура"
+            android:visible="false"/>
+        <item
+            android:id="@+id/documents"
+            android:icon="@drawable/message_ico"
+            android:title="Сообщение" />
+        <item
+            android:id="@+id/nav_update"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Обновить"
+            android:visible="false"/>
+        <item
+            android:id="@+id/exit"
+            android:icon="@drawable/exit"
+            android:title="Выход" />
+    </group>
+
+
+</menu>
