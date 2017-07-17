@@ -1,5 +1,6 @@
 package com.example.vadim.dpapp.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -76,13 +77,14 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         Menu nav_Menu = navigationView.getMenu();
-        if(AppConfig.rights.equals("Контрагент")) {
+        if(AppConfig.rights.equals(R.string.rights_contractor)) {
             nav_Menu.findItem(R.id.tasks).setVisible(false);
             nav_Menu.findItem(R.id.nav_slideshow).setVisible(false);
             nav_Menu.findItem(R.id.documents).setVisible(false);
             nav_Menu.findItem(R.id.nav_update).setVisible(false);
             fab.setVisibility(View.INVISIBLE);
         }
+        AppConfig.flagEnter = true;
     }
 
     @Override
@@ -103,10 +105,10 @@ public class MainActivity extends AppCompatActivity
         textLogin.setText(AppConfig.User);
         textContractor.setText(AppConfig.Contractor);
         ImageView ico = (ImageView) findViewById(R.id.imageView);
-        if(AppConfig.rights.equals("Контрагент")) {
+        if(AppConfig.rights.equals(R.string.rights_contractor)) {
             ico.setImageResource(R.drawable.dp_icon_contragent);
         }
-        else if(AppConfig.rights.equals("Техник")){
+        else if(AppConfig.rights.equals(R.string.rights_technick)){
             ico.setImageResource(R.drawable.dp_ico_tecnick);
         }
         else {
@@ -157,7 +159,7 @@ public class MainActivity extends AppCompatActivity
                 finishAffinity();
             }
             else {
-                finish();
+                ((AppCompatActivity) this).finish();
             }
         }
         item.setChecked(true);
@@ -197,7 +199,7 @@ public class MainActivity extends AppCompatActivity
                 fab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(AppConfig.rights.equals("Контрагент")){
+                        if(AppConfig.rights.equals(R.string.rights_contractor)){
                             intent = new Intent(MainActivity.this, OtchetActivity.class);
                         }
                         else {

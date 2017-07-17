@@ -6,4 +6,5 @@ public class AppConfig {
     public static String Contractor="";
     public static String rights="";
     public static boolean flagEnter = false;
+    public static boolean flagAccess = true;
 }

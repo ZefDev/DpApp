@@ -447,7 +447,6 @@ public class RESTController {
     public void getUser() {
         arrayString = new ArrayList<>();
         tag_string_req = "req_get_user";
-
         StringRequest strReq = new StringRequest(Request.Method.POST, prefix+ip,
                 new Response.Listener<String>() {
 
@@ -474,7 +473,10 @@ public class RESTController {
                         }
                         Sign_in.listUser=tmp;
                         if( Sign_in.listUser.size()!=0) {
-                            if ( Sign_in.listUser.get(0).getPost().equals("false")) {
+                            if ( (Sign_in.listUser.get(0).getPost().equals("false")&(!Sign_in.listUser.get(0).getLogin().equals("")))) {
+                                AppConfig.flagAccess=false; noAccess();//Toast.makeText(context,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG).show();//noAccess();
+                            }
+                            else if(Sign_in.listUser.get(0).getLogin().equals("")){
                                 context.startActivity(Sign_in.registrationIntent);
                             }
                             else {
@@ -787,6 +789,20 @@ public class RESTController {
         AlertDialog alert = builder.create();
         alert.show();
 
+    }
+
+    public void noAccess(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("Ждите подтверждение регистрации или обратитесь к администратору!")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.dismiss();
+                                        ((Activity) context).finish();
+                                    }
+                                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
 

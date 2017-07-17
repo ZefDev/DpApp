@@ -1,6 +1,9 @@
 package com.example.vadim.dpapp.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -15,6 +18,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.vadim.dpapp.R;
+import com.example.vadim.dpapp.application.AppConfig;
 import com.example.vadim.dpapp.application.DBHelper;
 import com.example.vadim.dpapp.application.RESTController;
 import com.example.vadim.dpapp.containers.UserContainer;
@@ -41,9 +45,8 @@ public class registration extends Activity {
         final RESTController restController = new RESTController(this, Setting.class.getSimpleName());
 
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        final String deviceIMEI = telephonyManager.getDeviceId();
         final String numberPhone = telephonyManager.getLine1Number();
-
+        final Toast t = Toast.makeText(this,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG);
         registration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,8 +68,10 @@ public class registration extends Activity {
                 else {
                     regPassword.setBackgroundResource(R.drawable.edit_text_style);
                 }
-                Toast.makeText(registration.this, "Запрос отправлен, ждите ответа администрации", Toast.LENGTH_SHORT).show();
-                restController.sendUser( regLogin.getText().toString(), numberPhone, regPassword.getText().toString(), deviceIMEI.toString());
+                AppConfig.flagEnter = true;
+                restController.sendUser( regLogin.getText().toString(), numberPhone, regPassword.getText().toString(), AppConfig.uid);
+                t.show();
+                //noAccess(2,getApplicationContext());
             }
         });
     }
