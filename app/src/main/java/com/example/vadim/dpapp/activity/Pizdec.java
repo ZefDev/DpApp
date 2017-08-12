@@ -3,9 +3,11 @@ package com.example.vadim.dpapp.activity;
 /**
  * Created by Vadim on 17.05.2017.
  */
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
@@ -13,12 +15,14 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.vadim.dpapp.R;
 import com.example.vadim.dpapp.application.CameraPreview;
@@ -40,6 +44,7 @@ import java.util.Map;
 public class Pizdec extends Activity {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int BLACK = 0xFF000000;
+    private static final int REQUEST_ID_READ_WRITE_PERMISSION = 100;
     private Camera mCamera;
     private CameraPreview mPreview;
     private Handler autoFocusHandler;
@@ -56,7 +61,11 @@ public class Pizdec extends Activity {
     private Button contin;
 
     static {
-        System.loadLibrary("iconv");
+      //  if(android.os.Build.VERSION.SDK_INT >= 23) {
+       //     System.loadLibrary("iconv1");///("iconv");
+        //}{
+            System.loadLibrary("iconv");
+        //}
     }
 
     public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +103,7 @@ public class Pizdec extends Activity {
                 barcodeScanned = false;
             }
         });
+
         //scanText = (TextView) findViewById(R.id.scanText);
 
         //bar_code = (ImageView) findViewById(R.id.bar_code);
@@ -132,9 +142,28 @@ public class Pizdec extends Activity {
     /**
      * A safe way to get an instance of the Camera object.
      */
-    public static Camera getCameraInstance() {
+    public Camera getCameraInstance() {
         Camera c = null;
-        c = Camera.open(0);
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+
+            // Check if we have read/write permission
+            // Kiểm tra quyền đọc/ghi dữ liệu vào thiết bị lưu trữ ngoài.
+            int camer = ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.CAMERA);
+
+            if (camer != PackageManager.PERMISSION_GRANTED ) {
+                // If don't have permission so prompt the user.
+                this.requestPermissions(new String[]{Manifest.permission.CAMERA},REQUEST_ID_READ_WRITE_PERMISSION);
+
+            }
+            else {
+                c = Camera.open(0);
+            }
+        }
+        else{
+            c = Camera.open(0);
+        }
+
 
         return c;
     }
@@ -263,5 +292,30 @@ public class Pizdec extends Activity {
         return null;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //
+        switch (requestCode) {
+            case REQUEST_ID_READ_WRITE_PERMISSION: {
+
+                // Note: If request is cancelled, the result arrays are empty.
+                // Permissions granted (read/write).
+                Camera c;
+                if (grantResults.length > 1
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    c = Camera.open(0);
+                    Toast.makeText(this, "Permission granted!", Toast.LENGTH_LONG).show();
+                }
+                // Cancelled or denied.
+                else {
+                    Toast.makeText(this, "Permission denied!", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+        }
+    }
 
 }

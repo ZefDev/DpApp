@@ -123,11 +123,11 @@ public class DBHelper extends SQLiteOpenHelper {
         ArrayList tmp = new ArrayList();
         ContentValues values = new ContentValues();
         //Log.e("Otask","Otask: " + Otask.getOtasks());
-        int pos = 1;
+        int pos = 0;
         for(CompliteTaskContainer compliteTask: Otask.getCompliteTask()){
             //Log.e("O","\ncodeTask: "  + ot.getCodeTask() + "\ncodeActiv: " + ot.getCodeActiv() +"\nname: " + ot.getOpisanie());
             //Log.e("Otask", ot.toString());
-            values.put("id",compliteTask.getCodeTask()+pos);
+            values.put("id",pos);
             values.put("date",compliteTask.getDate());
             values.put("compliteOTask",compliteTask.getCompliteTask());
             values.put("time",compliteTask.getTime());
@@ -431,7 +431,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         Cursor cursor = db.query("CompliteTask",null,"codeTask = ?",new String[]{compliteTask.getCodeTask()},null,null,null);
         int currPosition = 0;
-        long updateId = 0;
+        long updateId = position++;
         if(cursor.getCount()!=-1){
             if(cursor.moveToFirst()){
                 do {
@@ -442,7 +442,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     }*/
                     Log.e("",""+cursor.getInt(cursor.getColumnIndex("id")));
                     Log.e("",""+cursor.getInt(cursor.getColumnIndex("codeTask")));
-                    Log.e("",""+cursor.getInt(cursor.getColumnIndex("compliteTask")));
+                    Log.e("",""+cursor.getInt(cursor.getColumnIndex("compliteOTask")));
                     Log.e("",""+cursor.getString(cursor.getColumnIndex("date")));
                     Log.e("",""+cursor.getString(cursor.getColumnIndex("time")));
                     currPosition++;
@@ -524,5 +524,24 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         }
         return list;
+    }
+
+    public void remove(String code,String keyColumn, String table){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(table,keyColumn+" = " + code, null);
+    }
+
+    public void removeAll(String table){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(table,null,null);
+    }
+
+    public void updateCompliteTaskS(int position,CompliteTaskContainer compliteTask) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("date",compliteTask.getDate());
+        values.put("compliteOTask",compliteTask.getCompliteTask());
+        values.put("time",compliteTask.getTime());
+        db.update("CompliteTask",values,"id = ?", new String[]{String.valueOf(position)});
     }
 }

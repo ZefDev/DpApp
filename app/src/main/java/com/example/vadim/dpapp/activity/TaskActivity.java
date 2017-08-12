@@ -12,6 +12,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ContextMenu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -92,12 +95,6 @@ public class TaskActivity extends AppCompatActivity {
         fabTask = (Button) findViewById(R.id.fabTask);
         listViewOTask = (ListView) findViewById(R.id.listViewOTask);
         listTask = (ListView) findViewById(R.id.listViewCompliteTask);
-        listTask.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ShowDialog(false,position);
-            }
-        });
         editCode.setText(code);
         editName.setText(name);
         editContractor.setText(contractor);
@@ -120,6 +117,9 @@ public class TaskActivity extends AppCompatActivity {
             listViewOTask.setAdapter(new OTaskAdapter(this, taskContainer.getOtasks()));
             listTask.setAdapter(new CompliteTaskAdapter(this,taskContainer.getCompliteTask()));
         }
+        registerForContextMenu(listTask);
+        //listViewOTask
+
         rest = new RESTController(this,TaskActivity.class.getSimpleName());
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,9 +133,35 @@ public class TaskActivity extends AppCompatActivity {
                     isComplite = "Нет";
                 }
                 rest.sendTask(code, name, contractor, Date, isComplite,listCompliteTask);
+                dbHelper.remove(code,"Code","Task");
                 finish();
             }
         });
+    }
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context_menu, menu);
+    }
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.edit:
+                ShowDialog(false,info.position);
+                return true;
+            case R.id.delete:
+                dbHelper.remove(String.valueOf(info.position),"id","CompliteTask");
+                listCompliteTask = dbHelper.getAllCompliteTask(code);
+                b = new CompliteTaskAdapter(context, listCompliteTask);
+                b.notifyDataSetChanged();
+                listTask.setAdapter(b);
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     public void InitializationVariable(){
@@ -226,9 +252,9 @@ public class TaskActivity extends AppCompatActivity {
                 }
                 if(flag==true) {
                     if(isCreate)
-                        dbHelper.addCompliteTask(new CompliteTaskContainer(1, date, complteOTask.getText().toString(), time.getText().toString(), code, ""),listCompliteTask.size()+1);
+                        dbHelper.addCompliteTask(new CompliteTaskContainer(position, date, complteOTask.getText().toString(), time.getText().toString(), code, ""),listCompliteTask.size()+1);
                     else
-                        dbHelper.updateCompliteTask(position,(new CompliteTaskContainer(1, date, complteOTask.getText().toString(), time.getText().toString(), code, "")));
+                        dbHelper.updateCompliteTaskS(position,(new CompliteTaskContainer(position, date, complteOTask.getText().toString(), time.getText().toString(), code, "")));
                     listCompliteTask = dbHelper.getAllCompliteTask(code);
                     b = new CompliteTaskAdapter(context, listCompliteTask);
                     b.notifyDataSetChanged();

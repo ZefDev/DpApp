@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.vadim.dpapp.R;
 import com.example.vadim.dpapp.application.AppConfig;
@@ -54,7 +55,7 @@ public class DocActivity extends AppCompatActivity {
             messageDoc.setVisibility(View.VISIBLE);
             messageText.setVisibility(View.GONE);
         }
-
+        final Toast t = Toast.makeText(this,"Сообщение успешно отправлено!",Toast.LENGTH_LONG);
         InitializationVariable();
         rest = new RESTController(this,DocActivity.class.getSimpleName());
         saveMessage.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +69,7 @@ public class DocActivity extends AppCompatActivity {
                 }
                 if(docFlag)
                     rest.sendDocuments(code,codeDoc.getText().toString(), avtorDoc.getText().toString(), messageDoc.getText().toString());
+                    t.show();
             }
         });
 

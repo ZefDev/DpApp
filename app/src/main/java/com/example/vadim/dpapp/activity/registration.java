@@ -36,43 +36,48 @@ public class registration extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registration);
-        final EditText regLogin = (EditText) findViewById(R.id.regLogin);
+        final EditText surname = (EditText) findViewById(R.id.surname);
+        final EditText name = (EditText) findViewById(R.id.name);
+        final EditText secondname = (EditText) findViewById(R.id.secondname);
         final EditText regPassword = (EditText) findViewById(R.id.regPassword);
+        final EditText numberphone = (EditText) findViewById(R.id.numberphone);
         Button registration = (Button) findViewById(R.id.registration);
+        final EditText[] mas = new EditText[5];
+        mas[0] = surname;
+        mas[1] = name;
+        mas[2] = secondname;
+        mas[3] = regPassword;
+        mas[4] = numberphone;
         dbHelper = new DBHelper(this);
         dbHelper.create_db();
         dbHelper.open();
         final RESTController restController = new RESTController(this, Setting.class.getSimpleName());
-
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        final String numberPhone = telephonyManager.getLine1Number();
-        final Toast t = Toast.makeText(this,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG);
         registration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 boolean flag = true;
-                if (regLogin.getText().length() == 0) {
-                    regLogin.setBackgroundResource(R.drawable.not_valid);
-                    regLogin.setHintTextColor(getResources().getColor(R.color.red));
-                    flag = false;
+                for(int i=0;i<mas.length;i++){
+                    if (mas[i].getText().length() == 0) {
+                        mas[i].setBackgroundResource(R.drawable.not_valid);
+                        mas[i].setHintTextColor(getResources().getColor(R.color.red));
+                        flag = false;
+                    }
+                    else{
+                        mas[i].setBackgroundResource(R.drawable.edit_text_style);
+                    }
                 }
-                else{
-                    regLogin.setBackgroundResource(R.drawable.edit_text_style);
-                }
-
-                if (regPassword.getText().length() == 0) {
-                    regPassword.setBackgroundResource(R.drawable.not_valid);
-                    regPassword.setHintTextColor(getResources().getColor(R.color.red));
-                    flag = false;
-                }
-                else {
-                    regPassword.setBackgroundResource(R.drawable.edit_text_style);
-                }
+                String regLogin = mas[0].getText().toString() +
+                        " "+ mas[1].getText().toString() +
+                        " "+ mas[2].getText().toString();
+                String numberPhone =  mas[4].getText().toString();
                 AppConfig.flagEnter = true;
-                restController.sendUser( regLogin.getText().toString(), numberPhone, regPassword.getText().toString(), AppConfig.uid);
-                t.show();
-                //noAccess(2,getApplicationContext());
-            }
+                if(flag) {
+                    restController.sendUser(regLogin, numberPhone, regPassword.getText().toString(), AppConfig.uid);
+                    dbHelper.create_db();
+                    //finish();
+                }
+                //finish();
+        }
         });
     }
 

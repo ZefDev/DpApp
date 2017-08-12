@@ -1,9 +1,13 @@
 package com.example.vadim.dpapp.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -14,16 +18,24 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.SparseArray;
+import android.view.ContextMenu;
+import android.view.KeyEvent;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
+import com.example.vadim.dpapp.adapters.CompliteTaskAdapter;
 import com.example.vadim.dpapp.application.DBHelper;
 import com.example.vadim.dpapp.R;
 import com.example.vadim.dpapp.application.RESTController;
@@ -35,6 +47,9 @@ import java.util.ArrayList;
 
 public class ElementActivity extends AppCompatActivity {
     static final int GALLERY_REQUEST = 1;
+    static final int CAMERA_REQUEST = 3;
+    private static final int REQUEST_ID_READ_WRITE_PERMISSION = 100 ;
+    private static final int CAMERA_RESULT = 101;
     static String shtrihhh="";
     ImageView imageView;
     EditText editTextName;
@@ -55,12 +70,14 @@ public class ElementActivity extends AppCompatActivity {
     Intent intent;
     boolean flagPhoto=false;
     boolean anotherFlag = true;
+    Context context = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dbHelper = new DBHelper(this);
         dbHelper.create_db();
+        context = this;
         rest = new RESTController(this,ElementActivity.class.getSimpleName());
         setContentView(R.layout.activ_element);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -71,15 +88,14 @@ public class ElementActivity extends AppCompatActivity {
         editTextShtrihCode = (EditText) findViewById(R.id.editTextShtrihCode);
         editTextTypeActiv = (EditText) findViewById(R.id.editTextTypeActiv);
         loadImage = (Button) findViewById(R.id.loadImg);
-
-        loadImage.setOnClickListener(new View.OnClickListener() {
+        registerForContextMenu(loadImage);
+        /*loadImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
+
+
             }
-        });
+        });*/
         scaning = (Button) findViewById(R.id.scaning);
         scaning.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,7 +103,6 @@ public class ElementActivity extends AppCompatActivity {
                 intent = new Intent(ElementActivity.this, Pizdec.class);
                 startActivityForResult(intent, 2);
             }
-
         });
         spinner = (Spinner) findViewById(R.id.activ_spiner_with_contr);
         getInfoElement();
@@ -156,11 +171,17 @@ public class ElementActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    bitmap = ScaleImage(bitmap);
                     imageView.setImageBitmap(bitmap);
                     flagPhoto = true;
                     break;
                 case 2:
                     editTextShtrihCode.setText(ElementActivity.shtrihhh);
+                    break;
+                case CAMERA_RESULT:
+                    bitmap = (Bitmap) imageReturnedIntent.getExtras().get("data");
+                    imageView.setImageBitmap(bitmap);
+                    strImage = convertBitmapToBase64String(bitmap);
                     break;
             }
         }
@@ -215,4 +236,66 @@ public class ElementActivity extends AppCompatActivity {
         return activeNetworkInfo != null;
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_camera, menu);
+    }
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        Intent photoPickerIntent;
+        switch (item.getItemId()) {
+            case R.id.camera:
+                //photoPickerIntent = new Intent(Intent.ACTION_CAMERA_BUTTON);
+                //photoPickerIntent.setType("image/*");
+                //startActivityForResult(photoPickerIntent, CAMERA_REQUEST);
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                //intent.setAction(Intent.ACTION_CAMERA_BUTTON);
+                //intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
+                //        KeyEvent.KEYCODE_CAMERA));
+                startActivityForResult(intent, CAMERA_RESULT);
+                return true;
+            case R.id.photo_gallery:
+                photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    public Bitmap ScaleImage(Bitmap bitmap){
+        int optimalSize = 500;
+        double optimalWidth;
+        double optimalHeight;
+
+        if (bitmap.getWidth() > bitmap.getHeight()) {
+            double x = bitmap.getWidth() / optimalSize;
+            optimalWidth = optimalSize;
+            optimalHeight = bitmap.getHeight() / x;
+        } else {
+            double x = bitmap.getHeight() / optimalSize;
+            optimalHeight = optimalSize;
+            optimalWidth = bitmap.getWidth() / x;
+        }
+        bitmap = Bitmap.createScaledBitmap(bitmap, (int) optimalWidth,
+                (int) optimalHeight, false);
+        return bitmap;
+    }
+
+
+    @Override
+    public void registerForContextMenu(View view) {
+        super.registerForContextMenu(view);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openContextMenu(v);
+            }
+        });
+    }
 }

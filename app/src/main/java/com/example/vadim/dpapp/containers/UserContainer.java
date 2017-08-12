@@ -24,6 +24,13 @@ public class UserContainer {
         this.post = post;
         this.right = right;
     }
+    public UserContainer(String login, String contractor, String post, String right,String uid) {
+        this.login = login;
+        this.contractor = contractor;
+        this.post = post;
+        this.right = right;
+        this.uid = uid;
+    }
 
     public String getLogin() {
         return login;

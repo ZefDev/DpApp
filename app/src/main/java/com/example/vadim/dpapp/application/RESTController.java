@@ -24,6 +24,7 @@ import com.example.vadim.dpapp.activity.Setting;
 import com.example.vadim.dpapp.activity.Sign_in;
 import com.example.vadim.dpapp.adapters.ActivAdapter;
 import com.example.vadim.dpapp.adapters.DocAdapter;
+import com.example.vadim.dpapp.adapters.ReportAdapter;
 import com.example.vadim.dpapp.adapters.TaskAdapter;
 import com.example.vadim.dpapp.containers.ActivContainer;
 import com.example.vadim.dpapp.containers.CompliteTaskContainer;
@@ -133,12 +134,13 @@ public class RESTController {
                             ArrayList<TaskContainer> oldTasks = new ArrayList<>();
                             oldTasks = dbHelper.getAllTasks(null);
                             for(TaskContainer t: tmp){
+                                dbHelper.removeAll("CompliteTask");
                                 String oldTask = null;
                                 for(TaskContainer oldt: oldTasks) {
                                     if(t.getCode().equals(oldt.getCode())){
                                         dbHelper.updateTask(t);
                                         dbHelper.updateOTasks(t);
-                                        dbHelper.updateCompliteTasks(t);
+                                        dbHelper.addCompliteTask(t);//dbHelper.updateCompliteTasks(t);
                                         oldTask = oldt.getCode();
                                         break;
                                     }
@@ -370,7 +372,7 @@ public class RESTController {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
-    public void getOtchet() {
+    public void getOtchet(final ListView listView) {
         tag_string_req = "req_get_otchet";
         dialog.setMessage("Get otchet...");
         showDialog();
@@ -414,8 +416,8 @@ public class RESTController {
                                     dbHelper.addReport(t);
                                 }
                             }
-                            //listView.setAdapter(new ActivAdapter(context, dbHelper.getAllActiv()));
-                            //listView.setDividerHeight(0);
+                            listView.setAdapter(new ReportAdapter(context, dbHelper.getAllReport(null)));
+                            listView.setDividerHeight(0);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -463,7 +465,8 @@ public class RESTController {
                                         user.getString("login"),
                                         user.getString("contractor"),
                                         user.getString("post"),
-                                        user.getString("right")
+                                        user.getString("right"),
+                                        user.getString("UID")
                                 );
                                 tmp.add(use);
                                 arrayString.add(user.getString("post"));
@@ -473,17 +476,20 @@ public class RESTController {
                         }
                         Sign_in.listUser=tmp;
                         if( Sign_in.listUser.size()!=0) {
-                            if ( (Sign_in.listUser.get(0).getPost().equals("false")&(!Sign_in.listUser.get(0).getLogin().equals("")))) {
-                                AppConfig.flagAccess=false; noAccess();//Toast.makeText(context,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG).show();//noAccess();
-                            }
-                            else if(Sign_in.listUser.get(0).getLogin().equals("")){
-                                context.startActivity(Sign_in.registrationIntent);
-                            }
-                            else {
+                            if(Sign_in.listUser.get(0).getPost().equals("true")){
                                 AppConfig.User=Sign_in.listUser.get(0).getLogin();
                                 AppConfig.Contractor= Sign_in.listUser.get(0).getContractor();
                                 AppConfig.rights= Sign_in.listUser.get(0).getRight();
                                 context.startActivity(Sign_in.intent);
+                            }
+                            else if ((Sign_in.listUser.get(0).getPost().equals("false")&(!Sign_in.listUser.get(0).getUid().equals(""))&(!Sign_in.listUser.get(0).getRight().equals("")))) {//Вас заблокиировали
+                                AppConfig.flagAccess=false; noAccess("Вас временно заблокировали, обратитесь к администратору!");//Toast.makeText(context,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG).show();//noAccess();
+                            }
+                            else if ((Sign_in.listUser.get(0).getPost().equals("false")&(!Sign_in.listUser.get(0).getUid().equals(""))&(Sign_in.listUser.get(0).getRight().equals("")))) {//Вас заблокиировали
+                                AppConfig.flagAccess=false; noAccess("Запрос отправлен, ожидайте подтверждение регистрации!");
+                            }
+                            else if((Sign_in.listUser.get(0).getPost().equals("false")&Sign_in.listUser.get(0).getUid().equals(""))){
+                                context.startActivity(Sign_in.registrationIntent);
                             }
                         }
                         AppConfig.flagEnter = true;
@@ -612,7 +618,13 @@ public class RESTController {
 
                     @Override
                     public void onResponse(String response) {
-                        dbHelper.updateTask(new TaskContainer(codeTask, nameTask, contractorTask, dateTask, complite));
+                        Log.d(tag, "DBBBBBBBBBBBBB: " + complite);
+                        if(complite.equals("Да")){
+
+                        }
+                        else {
+                           dbHelper.updateTask(new TaskContainer(codeTask, nameTask, contractorTask, dateTask, complite));
+                        }
                         Log.d(tag, "Send Tasks Response: " + response.toString());
                     }
                 }, new Response.ErrorListener() {
@@ -698,13 +710,14 @@ public class RESTController {
                     @Override
                     public void onResponse(String response) {
                         Log.d(tag, "Send user Response: " + response.toString());
-                        hideDialog();
+                        noAccess("Запрос отправлен, ожидайте подтверждение регистрации!");
                     }
                 }, new Response.ErrorListener() {
 
             @Override
             public void onErrorResponse(VolleyError error) {
                 hideDialog();
+                noAccess("Запрос отправлен, ожидайте подтверждение регистрации!");
             }
         }){
             @Override
@@ -791,18 +804,20 @@ public class RESTController {
 
     }
 
-    public void noAccess(){
+    public void noAccess(String message){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Ждите подтверждение регистрации или обратитесь к администратору!")
+        builder.setMessage(message)
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         dialog.dismiss();
-                                        ((Activity) context).finish();
+                                        //((Activity) context).finish();
+                                        System.exit(0); //android.os.Process.killProcess(android.os.Process.myPid());//<-------Так делать плохо, не надо так!!!!
                                     }
                                 });
         AlertDialog alert = builder.create();
         alert.show();
+
     }
 
 

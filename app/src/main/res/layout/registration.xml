@@ -31,10 +31,42 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:id="@+id/regLogin"
+                android:id="@+id/surname"
                 android:layout_weight="1"
                 android:background="@drawable/edit_text_style"
-                android:hint="Введите ФИО"
+                android:hint="Введите фамилию"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="20dp" >
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/name"
+                android:layout_weight="1"
+                android:background="@drawable/edit_text_style"
+                android:hint="Введите имя"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="20dp" >
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/secondname"
+                android:layout_weight="1"
+                android:background="@drawable/edit_text_style"
+                android:hint="Введите отчество"
                 android:textAlignment="center" />
         </LinearLayout>
 
@@ -51,6 +83,22 @@
                 android:layout_weight="1"
                 android:background="@drawable/edit_text_style"
                 android:hint="Введите организацию"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="20dp" >
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/numberphone"
+                android:layout_weight="1"
+                android:background="@drawable/edit_text_style"
+                android:hint="Введите номер телефона"
                 android:textAlignment="center" />
         </LinearLayout>
 

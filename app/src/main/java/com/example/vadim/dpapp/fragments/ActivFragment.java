@@ -39,18 +39,18 @@ public class  ActivFragment extends Fragment {
         ListView listView = (ListView)view.findViewById(R.id.listView);
         MainActivity activity = (MainActivity) getActivity();
         dbHelper = new DBHelper(activity);
-
+        dbHelper.removeAll("Activ");
         intent = new Intent(getContext(), ElementActivity.class);
         arrayList = new ArrayList<>();
         restController = new RESTController(activity, ElementActivity.class.getSimpleName());
-        arrayList = dbHelper.getAllActiv();
+        //arrayList = dbHelper.getAllActiv();
         //if(activity.isConnected) {
         restController.getActiv(listView);
         if(AppConfig.rights.equals("Контрагент")) {
             restController = new RESTController(activity, OtchetActivity.class.getSimpleName());
             //arrayList = dbHelper.getAllActiv();
             //if(activity.isConnected) {
-            restController.getOtchet();
+            restController.getOtchet(listView);
         }
         //else{
 
