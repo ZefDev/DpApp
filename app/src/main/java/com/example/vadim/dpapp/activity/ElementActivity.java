@@ -46,30 +46,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ElementActivity extends AppCompatActivity {
-    static final int GALLERY_REQUEST = 1;
-    static final int CAMERA_REQUEST = 3;
-    private static final int REQUEST_ID_READ_WRITE_PERMISSION = 100 ;
-    private static final int CAMERA_RESULT = 101;
+    private static final int REQUEST_ID_READ_WRITE_PERMISSION = 100,CAMERA_RESULT = 101,CAMERA_REQUEST = 3,GALLERY_REQUEST=1;
     static String shtrihhh="";
     ImageView imageView;
-    EditText editTextName;
-    EditText editCode;
-    EditText editTextTypeActiv;
-    EditText editTextShtrihCode;
+    EditText editTextName,editCode,editTextTypeActiv,editTextShtrihCode;
     Spinner spinner;
-    Button loadImage;
-    String code;
-    String name;
-    String shtrih;
-    String strImage="";
-    String contractor = null;
-    boolean flag;
+    Button loadImage,scaning;
+    String code, name, shtrih,strImage="",contractor = null;
     DBHelper dbHelper;
     RESTController rest;
-    Button scaning;
     Intent intent;
-    boolean flagPhoto=false;
-    boolean anotherFlag = true;
+    boolean flagPhoto=false,anotherFlag = true,flag;
     Context context = null;
 
     @Override
@@ -148,8 +135,12 @@ public class ElementActivity extends AppCompatActivity {
                     }
                     Snackbar.make(view, "Изменения успешно сохранены", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
+                    Intent description_task = new Intent();
+                    description_task.putExtra("shtrihCode", editTextShtrihCode.getText().toString());
+                    description_task.putExtra("nameActiv",editTextName.getText().toString());
+                    setResult(RESULT_OK, description_task);
                     rest.sendActiv(editCode.getText().toString(), editTextName.getText().toString(), editTextTypeActiv.getText().toString(), editTextShtrihCode.getText().toString(), strImage, spinner.getSelectedItem().toString());
-                    //finish();
+
                 }
             }
         });

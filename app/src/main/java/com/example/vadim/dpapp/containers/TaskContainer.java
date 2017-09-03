@@ -12,6 +12,44 @@ public class TaskContainer implements Serializable{
     private String date;
     private String executor;
     private String complite;
+    private String isApproved;
+    private String Waypoint;
+
+    public String getNextExecutor() {
+        return nextExecutor;
+    }
+
+    public void setNextExecutor(String nextExecutor) {
+        this.nextExecutor = nextExecutor;
+    }
+
+    private String nextExecutor;
+
+    public String getIsApproved() {
+        return isApproved;
+    }
+
+    public void setIsApproved(String isApproved) {
+        this.isApproved = isApproved;
+    }
+
+    public String getWaypoint() {
+        return Waypoint;
+    }
+
+    public void setWaypoint(String waypoint) {
+        Waypoint = waypoint;
+    }
+
+    public String getTypeTask() {
+        return typeTask;
+    }
+
+    public void setTypeTask(String typeTask) {
+        this.typeTask = typeTask;
+    }
+
+    private String typeTask;
     private ArrayList<OTaskContainer> otasks;
 
     public ArrayList<CompliteTaskContainer> getCompliteTask() {
@@ -31,7 +69,7 @@ public class TaskContainer implements Serializable{
         this.date = date;
         this.complite = complite;
     }
-    public TaskContainer(String code, String taskName, String contractor, String date, String executor, String complite, ArrayList otasks,ArrayList compliteTask) {
+    public TaskContainer(String code, String taskName, String contractor, String date, String executor, String complite, ArrayList otasks,ArrayList compliteTask,String typeTask,String isApproved,String Waypoint,String nextExecutor) {
         this.code = code;
         this.taskName = taskName;
         this.contractor = contractor;
@@ -40,6 +78,10 @@ public class TaskContainer implements Serializable{
         this.complite = complite;
         this.otasks = otasks;
         this.compliteTask =compliteTask;
+        this.typeTask = typeTask;
+        this.isApproved = isApproved;
+        this.Waypoint =Waypoint;
+        this.nextExecutor = nextExecutor;
     }
 
     public String getCode() {

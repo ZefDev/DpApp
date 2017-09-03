@@ -46,6 +46,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Тип задачи"
+                android:id="@+id/textView9"
+                android:textColor="@color/wallet_holo_blue_light" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Тип задачи"
+                android:id="@+id/editTypeTask"
+                android:gravity="center" />
+
+            <TextView
+                style="?android:listSeparatorTextViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Наименование"
                 android:id="@+id/textView4"
                 android:textColor="@color/wallet_holo_blue_light" />
@@ -101,6 +118,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Следующий исполнитель"
+                android:id="@+id/textView24"
+                android:singleLine="false"
+                android:textColor="@color/wallet_holo_blue_light" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinnerDirectoryUser"
+                android:visibility="visible" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:id="@+id/layoutIsApproved">
+
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/checkBox2"
+                    android:layout_column="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Одобрено"
+                    android:id="@+id/textView25" />
+
+            </LinearLayout>
+
+            <TextView
+                style="?android:listSeparatorTextViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Отметка о выполнении поручения"
                 android:id="@+id/textView8"
                 android:singleLine="false"
@@ -135,7 +190,6 @@
         android:text="Закрыть поручение"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginBottom="10dp"
         android:layout_gravity="bottom"
         android:layout_weight="1"
         android:textColor="#ffffff"

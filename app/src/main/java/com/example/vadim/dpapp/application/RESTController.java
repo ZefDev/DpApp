@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.util.ArraySet;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -20,6 +21,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.vadim.dpapp.activity.ElementActivity;
+import com.example.vadim.dpapp.activity.Pizdec;
 import com.example.vadim.dpapp.activity.Setting;
 import com.example.vadim.dpapp.activity.Sign_in;
 import com.example.vadim.dpapp.adapters.ActivAdapter;
@@ -43,6 +45,7 @@ import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,23 +59,24 @@ public class RESTController {
     private String ip;
     private String prefix = "http://";
     String tag_string_req;
+    String tag_message;
     JSONArray jsarray;
 
     public RESTController(Context context,String tag) {
         this.context = context;
         this.tag = tag;
         dbHelper = new DBHelper(context);
+        dbHelper.open();
         dialog = new ProgressDialog(context);
         dialog.setCancelable(false);
         this.ip = dbHelper.getIP();
 
     }
 
-    public void getTasks(final ListView listView) {
+    public void getTasks(final ListView listView,final Spinner spinner) {
         tag_string_req = "req_get_tasks";
         dialog.setMessage("Get tasks...");
         showDialog();
-
         StringRequest strReq = new StringRequest(Request.Method.POST, prefix+ip,
                 new Response.Listener<String>() {
 
@@ -106,7 +110,9 @@ public class RESTController {
                                     JSONObject otask = arrayOTasks.getJSONObject(j);
                                     otasks.add(new OTaskContainer(0, task.getString("code"),
                                             otask.getString("codeActiv"),
-                                            otask.getString("opisanie")));
+                                            otask.getString("opisanie"),
+                                            "",
+                                            otask.getString("shtrihCode")));
                                 }
                                 arrayCompliteTask =  task.getJSONArray("compliteTasks");
                                 for (int j = 0; j < arrayCompliteTask.length(); j++) {
@@ -127,7 +133,11 @@ public class RESTController {
                                         task.getString("executor"),
                                         task.getString("complite"),
                                         new ArrayList(otasks),
-                                        new ArrayList(compliteTask)//<----
+                                        new ArrayList(compliteTask),
+                                        task.getString("typeTask"),
+                                        task.getString("isApproved"),
+                                        task.getString("waypoint"),
+                                        task.getString("nextExecutor")//<----
                                 );
                                 tmp.add(taskContainer);
                             }
@@ -153,6 +163,11 @@ public class RESTController {
                             }
                             listView.setAdapter(new TaskAdapter(context, dbHelper.getAllTasks(null)));
                             listView.setDividerHeight(0);
+                            if(spinner!= null){
+                                ArrayList list = dbHelper.statusTask();
+                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, list);
+                                spinner.setAdapter(adapter);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -247,9 +262,15 @@ public class RESTController {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
-    public void getActiv(final ListView listView) {
+    public void getActiv(final ListView listView,final Spinner spinner,final String shtrihCode) {
         tag_string_req = "req_get_activ";
-        dialog.setMessage("Get activs...");
+        if(shtrihCode==null){
+            tag_message = "Загрузка списка активов...";
+        }
+        else {
+            tag_message = "Поиск актива...";
+        }
+        dialog.setMessage(tag_message);
         showDialog();
 
         StringRequest strReq = new StringRequest(Request.Method.POST, prefix+ip,
@@ -272,7 +293,9 @@ public class RESTController {
                                         activ.getString("typeActiv"),
                                         activ.getString("shtrihActiv"),
                                         activ.getString("photo"),
-                                        activ.getString("contractorActiv")
+                                        activ.getString("contractorActiv"),
+                                        activ.getString("mol"),
+                                        activ.getString("condition")
                                 );
                                 tmp.add(activContainer);
                             }
@@ -292,8 +315,23 @@ public class RESTController {
                                     dbHelper.addActiv(t);
                                 }
                             }
-                            listView.setAdapter(new ActivAdapter(context, dbHelper.getAllActiv()));
-                            listView.setDividerHeight(0);
+                            if(shtrihCode!=null){
+                                if(tmp.isEmpty()){
+                                    dia("add_activ",(Activity) context,shtrihCode,null);
+                                }
+                                else {
+                                    dia("activ_here",(Activity) context,shtrihCode,tmp.get(0).getName());
+                                }
+                            }
+                            if(listView!=null) {
+                                listView.setAdapter(new ActivAdapter(context, dbHelper.getAllActiv()));
+                                listView.setDividerHeight(0);
+                            }
+                            if(spinner!= null){
+
+                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, dbHelper.statusActiv());
+                                spinner.setAdapter(adapter);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -310,9 +348,15 @@ public class RESTController {
             protected Map<String, String> getParams() {
                 // Posting params to register url
                 Map<String, String> params = new HashMap<String, String>();
-                if(!AppConfig.rights.equals("Контрагент")) {
+                if(spinner==null & listView==null){
+                    params.put("tag", "get_activ_by_shtrihCode");
+                    params.put("contractor","");
+                    params.put("shtrihCode",shtrihCode);
+                }
+                else if(!AppConfig.rights.equals("Контрагент")) {
                     params.put("tag", "get_activ");
                     params.put("contractor","");
+                    params.put("mol",AppConfig.User);
                 }
                 else{
                     params.put("tag", "get_activ");
@@ -372,7 +416,7 @@ public class RESTController {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
-    public void getOtchet(final ListView listView) {
+    public void getOtchet(final ListView listView, final Spinner spinner) {
         tag_string_req = "req_get_otchet";
         dialog.setMessage("Get otchet...");
         showDialog();
@@ -416,8 +460,14 @@ public class RESTController {
                                     dbHelper.addReport(t);
                                 }
                             }
+
                             listView.setAdapter(new ReportAdapter(context, dbHelper.getAllReport(null)));
                             listView.setDividerHeight(0);
+                            if(spinner!= null){
+
+                                ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, dbHelper.statusReortActiv());
+                                spinner.setAdapter(adapter);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -434,9 +484,9 @@ public class RESTController {
             protected Map<String, String> getParams() {
                 // Posting params to register url
                 Map<String, String> params = new HashMap<String, String>();
-                    params.put("tag", "get_activ_contractor");
+                params.put("tag", "get_activ_contractor");
                 params.put("contractor",AppConfig.Contractor);
-
+                params.put("user",AppConfig.User);
                 return params;
             }
 
@@ -483,10 +533,10 @@ public class RESTController {
                                 context.startActivity(Sign_in.intent);
                             }
                             else if ((Sign_in.listUser.get(0).getPost().equals("false")&(!Sign_in.listUser.get(0).getUid().equals(""))&(!Sign_in.listUser.get(0).getRight().equals("")))) {//Вас заблокиировали
-                                AppConfig.flagAccess=false; noAccess("Вас временно заблокировали, обратитесь к администратору!");//Toast.makeText(context,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG).show();//noAccess();
+                                AppConfig.flagAccess=false; noAccess("Вас временно заблокировали, обратитесь к администратору!",true,null);//Toast.makeText(context,"Запрос отправлен, ожидайте подтверждение регистрации!",Toast.LENGTH_LONG).show();//noAccess();
                             }
                             else if ((Sign_in.listUser.get(0).getPost().equals("false")&(!Sign_in.listUser.get(0).getUid().equals(""))&(Sign_in.listUser.get(0).getRight().equals("")))) {//Вас заблокиировали
-                                AppConfig.flagAccess=false; noAccess("Запрос отправлен, ожидайте подтверждение регистрации!");
+                                AppConfig.flagAccess=false; noAccess("Запрос отправлен, ожидайте подтверждение регистрации!",true,null);
                             }
                             else if((Sign_in.listUser.get(0).getPost().equals("false")&Sign_in.listUser.get(0).getUid().equals(""))){
                                 context.startActivity(Sign_in.registrationIntent);
@@ -533,6 +583,7 @@ public class RESTController {
                         JSONArray jsonarray = null;
                         try {
                             jsonarray = new JSONArray(response);
+                            arrayContractor.add("Выберите контрагента");
                             for (int i = 0; i < jsonarray.length(); i++) {
                                 JSONObject user = jsonarray.getJSONObject(i);
                                 tmp.add(user.getString("name"));
@@ -575,13 +626,14 @@ public class RESTController {
 
                     @Override
                     public void onResponse(String response) {
-                        if(code==null) {
+                        /*if(code==null) {
                             dbHelper.addDocument(new DocContainer(codeDoc, avtorDoc, message,""));
                         }
                         else {
                             dbHelper.updateDocument(new DocContainer(codeDoc, avtorDoc, message,""));
-                        }
+                        }*/
                         hideDialog();
+                        noAccess("Сообщение успешно отправлено!",false,(Activity) context);
                         Log.d(tag, "Send Documents Response: " + response.toString());
                     }
                 }, new Response.ErrorListener() {
@@ -607,7 +659,7 @@ public class RESTController {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
-    public void sendTask(final String codeTask, final String nameTask, final String contractorTask, final String dateTask, final String complite, final ArrayList<CompliteTaskContainer> list) {
+    public void sendTask(final String codeTask, final String nameTask, final String contractorTask, final String dateTask, final String complite, final ArrayList<CompliteTaskContainer> list, final String typeTask,final String isApproved,final String waypoint,final String nextExecutor) {
         tag_string_req = "req_send_task";
         dialog.setMessage("Send task...");
         showDialog();
@@ -647,6 +699,10 @@ public class RESTController {
                 params.put("executer",AppConfig.User);
                 params.put("complite",complite);
                 params.put("listCompliteTask",list.toString());
+                params.put("typeTask",typeTask);
+                params.put("isApproved",isApproved);
+                params.put("waypoint",waypoint);
+                params.put("nextExecutor",nextExecutor);
                 return params;
             }
 
@@ -666,6 +722,9 @@ public class RESTController {
                     public void onResponse(String response) {
                         Log.d(tag, "Send Activ Response: " + response.toString());
                         hideDialog();
+                        Activity acivity = (Activity)context;
+                        Intent intent =  acivity.getIntent();
+                        acivity.finish();
                     }
                 }, new Response.ErrorListener() {
 
@@ -674,6 +733,10 @@ public class RESTController {
                 Log.e(tag, "Send activ Error: " + error.toString());
 //                connectionProblem(tag_string_req,0);
                 hideDialog();
+                Activity acivity = (Activity)context;
+                acivity.getIntent().putExtra("shtrihCode",shtrihCode);
+                acivity.getIntent().putExtra("nameActiv",nameActiv);
+                acivity.finish();
             }
         }){
             @Override
@@ -710,14 +773,14 @@ public class RESTController {
                     @Override
                     public void onResponse(String response) {
                         Log.d(tag, "Send user Response: " + response.toString());
-                        noAccess("Запрос отправлен, ожидайте подтверждение регистрации!");
+                        noAccess("Запрос отправлен, ожидайте подтверждение регистрации!",true,null);
                     }
                 }, new Response.ErrorListener() {
 
             @Override
             public void onErrorResponse(VolleyError error) {
                 hideDialog();
-                noAccess("Запрос отправлен, ожидайте подтверждение регистрации!");
+                noAccess("Запрос отправлен, ожидайте подтверждение регистрации!",true,null);
             }
         }){
             @Override
@@ -737,6 +800,54 @@ public class RESTController {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
+    public void getDirectoryUser(final Spinner spinner) {
+        final ArrayList<String> arrayDirectoryUser = new ArrayList<>();
+        tag_string_req = "req_get_directoryUser";
+        dialog.setMessage("Get directoryUser...");
+        showDialog();
+
+        StringRequest strReq = new StringRequest(Request.Method.POST, prefix+ip,
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(tag, "Get directoryUser Response: " + response.toString());
+                        hideDialog();
+                        ArrayList<String> tmp = new ArrayList<>();
+                        JSONArray jsonarray = null;
+                        try {
+                            jsonarray = new JSONArray(response);
+                            arrayDirectoryUser.add("Выберите исполнителя");
+                            for (int i = 0; i < jsonarray.length(); i++) {
+                                JSONObject user = jsonarray.getJSONObject(i);
+                                tmp.add(user.getString("name"));
+                                arrayDirectoryUser.add(tmp.get(i));
+                            }
+                            ArrayAdapter adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, arrayDirectoryUser);
+                            spinner.setAdapter(adapter);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                hideDialog();
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() {
+                // Posting params to register url
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("tag", "get_directoryUser");
+                return params;
+            }
+
+        };
+        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+    }
+
     private void showDialog(){
         if(!dialog.isShowing()){
             dialog.show();
@@ -751,6 +862,7 @@ public class RESTController {
     /* 0- для главного меню и остальных активити
        1- для врагментов */
     public void connectionProblem(String tag, final int flag){
+        Activity cont = (Activity) context;
         final Intent settingActivity  = new Intent(context, Setting.class);
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         switch(tag){
@@ -800,11 +912,13 @@ public class RESTController {
                 break;
         }
         AlertDialog alert = builder.create();
-        alert.show();
+        if(!cont.isFinishing()) {
+            alert.show();
+        }
 
     }
 
-    public void noAccess(String message){
+    public void noAccess(String message, final boolean flag, final Activity cntx){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message)
                 .setCancelable(false)
@@ -812,9 +926,52 @@ public class RESTController {
                                     public void onClick(DialogInterface dialog, int id) {
                                         dialog.dismiss();
                                         //((Activity) context).finish();
-                                        System.exit(0); //android.os.Process.killProcess(android.os.Process.myPid());//<-------Так делать плохо, не надо так!!!!
+                                        if(flag){
+                                            System.exit(0); //android.os.Process.killProcess(android.os.Process.myPid());//<-------Так делать плохо, не надо так!!!!
+                                        }
+                                        else {
+                                            cntx.finish();
+                                        }
                                     }
                                 });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+    }
+
+    public void dia(final String tag, final Activity cntx, final String shtrihCode,final String nameActiv){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        String message = "";
+        if(tag=="add_activ") {
+            message = "Актив в базе не найден! Создать новый актив?";
+            builder.setMessage(message)
+                    .setCancelable(false)
+                    .setNegativeButton("Нет", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                            Intent intent = new Intent(cntx, ElementActivity.class);
+                            intent.putExtra("shtrihCode",shtrihCode);
+                            cntx.startActivityForResult(intent,1);
+                        }
+                    });
+        }
+        else if(tag=="activ_here"){
+            message = "Актив в базе найден!";
+            builder.setMessage(message)
+                    .setCancelable(false)
+                    .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            cntx.getIntent().putExtra("nameActiv",nameActiv);
+                            dialog.dismiss();
+                        }
+                    });
+        }
         AlertDialog alert = builder.create();
         alert.show();
 

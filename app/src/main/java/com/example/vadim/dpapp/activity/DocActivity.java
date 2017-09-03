@@ -40,7 +40,7 @@ public class DocActivity extends AppCompatActivity {
         setContentView(R.layout.doc_element);
         dbHelper = new DBHelper(this);
         saveMessage = (Button) findViewById(R.id.saveMessage);
-        codeDoc =(TextView) findViewById(R.id.codeDoc);
+        //codeDoc =(TextView) findViewById(R.id.codeDoc);
         messageDoc = (EditText) findViewById(R.id.messageDoc);
         messageText = (TextView) findViewById(R.id.tvMessage);
         avtorDoc = (TextView) findViewById(R.id.avtorDoc);
@@ -68,7 +68,7 @@ public class DocActivity extends AppCompatActivity {
                     docFlag = false;
                 }
                 if(docFlag)
-                    rest.sendDocuments(code,codeDoc.getText().toString(), avtorDoc.getText().toString(), messageDoc.getText().toString());
+                    rest.sendDocuments(code,"", avtorDoc.getText().toString(), messageDoc.getText().toString());
                     t.show();
             }
         });
@@ -78,7 +78,7 @@ public class DocActivity extends AppCompatActivity {
         code = getIntent().getStringExtra("codeDoc");
         avtor = getIntent().getStringExtra("nameDoc");
         ArrayList<DocContainer> list = dbHelper.getAllDocuments();
-        if(code==null|code==""){
+        /*if(code==null|code==""){
             if(list.size()!=0) {
                 int last = Integer.parseInt(list.get(list.size() - 1).getCodeDoc()) + 1;
                 code = String.valueOf(last);
@@ -86,7 +86,7 @@ public class DocActivity extends AppCompatActivity {
             else{
                 code=String.valueOf(1);
             }
-        }
+        }*/
         if(avtor==null | avtor==""){
             avtor = AppConfig.User;
         }
@@ -96,7 +96,7 @@ public class DocActivity extends AppCompatActivity {
                 break;
             }
         }
-        codeDoc.setText(code);
+//        codeDoc.setText(code);
         avtorDoc.setText(avtor);
         messageDoc.setText(message);
         messageText.setText(message);

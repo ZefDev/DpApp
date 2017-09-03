@@ -15,14 +15,35 @@ public class ActivContainer  implements Serializable {
     private String shtrihCode;
     private String photo;
     private String contractor;
+    private String mol;
 
-    public ActivContainer(String code, String name, String typeActiv, String shtrihCode, String photo,String contractor) {
+    public String getMol() {
+        return mol;
+    }
+
+    public void setMol(String mol) {
+        this.mol = mol;
+    }
+
+    public String getConditionActiv() {
+        return conditionActiv;
+    }
+
+    public void setConditionActiv(String conditionActiv) {
+        this.conditionActiv = conditionActiv;
+    }
+
+    private String conditionActiv;
+
+    public ActivContainer(String code, String name, String typeActiv, String shtrihCode, String photo, String contractor, String mol, String conditionActiv) {
         this.code = code;
         this.name = name;
         this.typeActiv = typeActiv;
         this.shtrihCode = shtrihCode;
         this.photo = photo;
         this.contractor = contractor;
+        this.mol = mol;
+        this.conditionActiv = conditionActiv;
     }
 
     public String getCode() {

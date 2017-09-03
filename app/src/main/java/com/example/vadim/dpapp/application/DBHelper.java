@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
     private static String DB_PATH = "/data/data/com.example.vadim.dpapp/databases/";
-    private static String DB_NAME = "base.db3";
+    private static String DB_NAME = "base1.db3";
     private static final int SCHEMA = 1; // версия базы данных
 
     public SQLiteDatabase database;
@@ -81,6 +81,9 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("Date",task.getDate());
         values.put("Ispolnitel",task.getExecutor());
         values.put("Complite",task.getComplite());
+        values.put("isApproved",task.getIsApproved());
+        values.put("Waypoint",task.getWaypoint());
+        values.put("nextExecutor",task.getNextExecutor());
         db.insert("Task",null,values);
     }
 
@@ -94,7 +97,10 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("Date",task.getDate());
         values.put("Ispolnitel",task.getExecutor());
         values.put("Complite",task.getComplite());
-
+        values.put("typeTask",task.getTypeTask());
+        values.put("isApproved",task.getIsApproved());
+        values.put("Waypoint",task.getWaypoint());
+        values.put("nextExecutor",task.getNextExecutor());
         return db.update("Task", values, "Code = ?", new String[]{task.getCode()});
     }
 
@@ -113,6 +119,7 @@ public class DBHelper extends SQLiteOpenHelper {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
+            values.put("shtrihCode",ot.getShtrihCode());
             tmp.add(db.insert("DescriptionTask",null,values));
         }
         return tmp;
@@ -168,6 +175,8 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("shtrihCode",activ.getShtrihCode());
         values.put("photo",activ.getPhoto());
         values.put("contractor",activ.getContractor());
+        values.put("mol",activ.getMol());
+        values.put("conditionActiv",activ.getConditionActiv());
         db.insert("activ",null,values);
     }
 
@@ -192,6 +201,8 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("shtrihCode",activ.getShtrihCode());
         values.put("photo",activ.getPhoto());
         values.put("contractor",activ.getContractor());
+        values.put("mol",activ.getMol());
+        values.put("conditionActiv",activ.getConditionActiv());
         return db.update("activ", values, "number = ?", new String[]{activ.getCode()});
     }
     public int updateReport(ReportContainer report){
@@ -222,53 +233,65 @@ public class DBHelper extends SQLiteOpenHelper {
             compliteTaskContainer.clear();
             Cursor cursorOTasks;
             Cursor cursorCompliteTask;
-            do {
-                if(code!=null)
-                    cursorOTasks = db.query("DescriptionTask",null,"codeTask = ?",new String[] {code},null,null,null);
-                else
-                    cursorOTasks = db.query("DescriptionTask",null,null,null,null,null,null);
-                if(cursorOTasks.moveToFirst()){
-                    do {
-                        OTaskContainer otask = new OTaskContainer(
-                                cursorOTasks.getInt(cursorOTasks.getColumnIndex("code")),
-                                cursorOTasks.getString(cursorOTasks.getColumnIndex("codeTask")),
-                                cursorOTasks.getString(cursorOTasks.getColumnIndex("codeActiv")),
-                                cursorOTasks.getString(cursorOTasks.getColumnIndex("name"))
-                        );
-                        oTaskContainers.add(otask);
-                        count++;
-                    }while (cursorOTasks.moveToNext());
-                }
-                if(code!=null)
-                    cursorCompliteTask = db.query("CompliteTask",null,"codeTask = ?",new String[] {code},null,null,null);
-                else
-                    cursorCompliteTask = db.query("CompliteTask",null,null,null,null,null,null);
-                if(cursorCompliteTask.moveToFirst()){
-                    do {
-                        CompliteTaskContainer compliteTask = new CompliteTaskContainer(
-                                cursorCompliteTask.getInt(cursorCompliteTask.getColumnIndex("id")),
-                                cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("date")),
-                                cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("compliteOTask")),
-                                cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("time")),
-                                cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("codeTask")),
-                                cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("codeActiv"))
-                        );
-                        compliteTaskContainer.add(compliteTask);
-                        //count++;
-                    }while (cursorCompliteTask.moveToNext());
-                }
-                TaskContainer container = new TaskContainer(
-                        cursor.getString(cursor.getColumnIndex("Code")),
-                        cursor.getString(cursor.getColumnIndex("Name")),
-                        cursor.getString(cursor.getColumnIndex("Kontracter")),
-                        cursor.getString(cursor.getColumnIndex("Date")),
-                        cursor.getString(cursor.getColumnIndex("Ispolnitel")),
-                        cursor.getString(cursor.getColumnIndex("Complite")),
-                        new ArrayList(oTaskContainers),
-                        new ArrayList(compliteTaskContainer)
-                );
-                list.add(container);
-            }while (cursor.moveToNext());
+            try {
+                do {
+
+                    if (code != null)
+                        cursorOTasks = db.query("DescriptionTask", null, "codeTask = ?", new String[]{code}, null, null, null);
+                    else
+                        cursorOTasks = db.query("DescriptionTask", null, null, null, null, null, null);
+                    if (cursorOTasks.moveToFirst()) {
+                        do {
+                            OTaskContainer otask = new OTaskContainer(
+                                    cursorOTasks.getInt(cursorOTasks.getColumnIndex("code")),
+                                    cursorOTasks.getString(cursorOTasks.getColumnIndex("codeTask")),
+                                    cursorOTasks.getString(cursorOTasks.getColumnIndex("codeActiv")),
+                                    cursorOTasks.getString(cursorOTasks.getColumnIndex("name")),
+                                    "",
+                                    cursorOTasks.getString(cursorOTasks.getColumnIndex("shtrihCode"))
+                            );
+                            oTaskContainers.add(otask);
+                            count++;
+                        } while (cursorOTasks.moveToNext());
+                    }
+                    if (code != null)
+                        cursorCompliteTask = db.query("CompliteTask", null, "codeTask = ?", new String[]{code}, null, null, null);
+                    else
+                        cursorCompliteTask = db.query("CompliteTask", null, null, null, null, null, null);
+                    if (cursorCompliteTask.moveToFirst()) {
+                        do {
+                            CompliteTaskContainer compliteTask = new CompliteTaskContainer(
+                                    cursorCompliteTask.getInt(cursorCompliteTask.getColumnIndex("id")),
+                                    cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("date")),
+                                    cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("compliteOTask")),
+                                    cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("time")),
+                                    cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("codeTask")),
+                                    cursorCompliteTask.getString(cursorCompliteTask.getColumnIndex("codeActiv"))
+                            );
+                            compliteTaskContainer.add(compliteTask);
+                            //count++;
+                        } while (cursorCompliteTask.moveToNext());
+                    }
+                    TaskContainer container = new TaskContainer(
+                            cursor.getString(cursor.getColumnIndex("Code")),
+                            cursor.getString(cursor.getColumnIndex("Name")),
+                            cursor.getString(cursor.getColumnIndex("Kontracter")),
+                            cursor.getString(cursor.getColumnIndex("Date")),
+                            cursor.getString(cursor.getColumnIndex("Ispolnitel")),
+                            cursor.getString(cursor.getColumnIndex("Complite")),
+                            new ArrayList(oTaskContainers),
+                            new ArrayList(compliteTaskContainer),
+                            cursor.getString(cursor.getColumnIndex("typeTask")),
+                            cursor.getString(cursor.getColumnIndex("isApproved")),
+                            cursor.getString(cursor.getColumnIndex("Waypoint")),
+                            cursor.getString(cursor.getColumnIndex("nextExecutor"))
+                    );
+                    list.add(container);
+                } while (cursor.moveToNext());
+            }
+            catch (Exception e){
+
+            }
         }
         return list;
     }
@@ -286,7 +309,9 @@ public class DBHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex("typeActiv")),
                             cursor.getString(cursor.getColumnIndex("shtrihCode")),
                             cursor.getString(cursor.getColumnIndex("photo")),
-                            cursor.getString(cursor.getColumnIndex("contractor"))
+                            cursor.getString(cursor.getColumnIndex("contractor")),
+                            cursor.getString(cursor.getColumnIndex("mol")),
+                            cursor.getString(cursor.getColumnIndex("conditionActiv"))
                     );
                     list.add(container);
                 }while (cursor.moveToNext());
@@ -544,4 +569,62 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("time",compliteTask.getTime());
         db.update("CompliteTask",values,"id = ?", new String[]{String.valueOf(position)});
     }
+
+    public ArrayList<String> statusTask(){
+        ArrayList<String> list = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT typeTask FROM Task GROUP BY typeTask",null);
+        String items =null;
+        if(cursor.getCount()!=-1){
+            if(cursor.moveToFirst()){
+                do {
+                    items = cursor.getString(cursor.getColumnIndex("typeTask"));
+                    if(items!=null){
+                        list.add(items);
+                    }
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+    public ArrayList<String> statusActiv(){
+        ArrayList<String> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        //Cursor cursor = db.rawQuery("SELECT conditionActiv FROM Activ GROUP BY conditionActiv",null);
+        Cursor cursor = db.query("Activ",new String[]{ "conditionActiv" },null,null,"conditionActiv",null,null);
+        String items =null;
+        if(cursor.getCount()!=-1){
+            if(cursor.moveToFirst()){
+                do {
+                    items = cursor.getString(cursor.getColumnIndex("conditionActiv"));
+                    if(items!=null){
+                        list.add(items);
+                    }
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+    public ArrayList<String> statusReortActiv(){
+        ArrayList<String> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        //Cursor cursor = db.rawQuery("SELECT conditionActiv FROM Activ GROUP BY conditionActiv",null);
+        Cursor cursor = db.query("report",new String[]{ "status" },null,null,"status",null,null);
+        String items =null;
+        if(cursor.getCount()!=-1){
+            if(cursor.moveToFirst()){
+                do {
+                    items = cursor.getString(cursor.getColumnIndex("status"));
+                    if(items!=null){
+                        list.add(items);
+                    }
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+
 }

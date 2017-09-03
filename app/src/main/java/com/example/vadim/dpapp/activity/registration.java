@@ -74,7 +74,7 @@ public class registration extends Activity {
                 if(flag) {
                     restController.sendUser(regLogin, numberPhone, regPassword.getText().toString(), AppConfig.uid);
                     dbHelper.create_db();
-                    //finish();
+
                 }
                 //finish();
         }

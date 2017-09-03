@@ -3,19 +3,30 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listViewOTask"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="1"
-        android:dividerHeight="1dp" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/addOTask"
-        android:visibility="gone" />
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/listViewOTask"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:dividerHeight="1dp" />
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/addActiv"
+            android:visibility="visible"
+            android:layout_marginRight="25dp"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/circle_button"
+            android:textColor="#ffffff"
+            android:text="+"
+            android:textSize="25sp"
+            android:layout_gravity="bottom|right" />
+    </FrameLayout>
 
 </LinearLayout>

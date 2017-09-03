@@ -1,5 +1,6 @@
 package com.example.vadim.dpapp.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.vadim.dpapp.activity.MainActivity;
@@ -25,6 +27,7 @@ public class TaskFragment extends Fragment {
     public static String TAG = TaskFragment.class.getSimpleName();
     View view;
     ListView listView;
+    Spinner spinner_typeTask;
     ArrayList<TaskContainer> tasks;
     DBHelper dbHelper;
     RESTController restController;
@@ -33,14 +36,17 @@ public class TaskFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_first, container, false);
+        final Context context = view.getContext();
         listView = (ListView)view.findViewById(R.id.list);
+        spinner_typeTask  = (Spinner) view.findViewById(R.id.spinner_typeTask);
         intent = new Intent(getContext(), TaskActivity.class);
         MainActivity activity = (MainActivity) getActivity();
         dbHelper = new DBHelper(activity);
         restController = new RESTController(activity,TAG);
         tasks = new ArrayList<>();
         //if(activity.isConnected) {
-        restController.getTasks(listView);
+        restController.getTasks(listView,spinner_typeTask);
+        //dbHelper.statusTask();
         /*}
         else {
             tasks = dbHelper.getAllTasks(null);
@@ -64,6 +70,35 @@ public class TaskFragment extends Fragment {
                 startActivity(intent);
             }
         });
+        spinner_typeTask.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+               String string = null;
+                try {
+                    string = spinner_typeTask.getSelectedItem().toString();
+                }
+                catch (Exception e){
+
+                }
+                ArrayList<TaskContainer> list = dbHelper.getAllTasks(null);
+                ArrayList<TaskContainer> list2 = new ArrayList<TaskContainer>();
+                 for(TaskContainer item: list){
+                   if (item.getTypeTask()!= null && item.getTypeTask().equals(string)){
+                       list2.add(item);
+                   }
+            }
+                if(!list2.isEmpty()) {
+                    listView.setAdapter(new TaskAdapter(context, list2));
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+
         return view;
     }
 

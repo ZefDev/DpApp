@@ -53,7 +53,14 @@ public class DocAdapter  extends BaseAdapter {
         // и картинка
         ((TextView) view.findViewById(R.id.codeDoc)).setText(String.valueOf(t.getCodeDoc()));
         ((TextView) view.findViewById(R.id.nameDoc)).setText(t.getAvtorDoc());
-        ((TextView) view.findViewById(R.id.textDoc)).setText(t.getLastDate().substring(0,19));
+        String ldate = "";
+        try {
+            ldate = t.getLastDate().substring(0,19);
+        }
+        catch (Exception e){
+
+        }
+        ((TextView) view.findViewById(R.id.textDoc)).setText(ldate);
 
         return view;
     }

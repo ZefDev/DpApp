@@ -57,8 +57,8 @@ public class OTaskAdapter extends BaseAdapter {
         // и картинка
         ((TextView) view.findViewById(R.id.codeOTask)).setText(String.valueOf(position+1));
         ((TextView) view.findViewById(R.id.nameOTask)).setText(t.getOpisanie());
-       // ((TextView) view.findViewById(R.id.codeTask)).setText(t.getCodeTask());
-
+        ((TextView) view.findViewById(R.id.codeActiv)).setText(t.getCodeActiv());
+        ((TextView) view.findViewById(R.id.shtrihCode)).setText(t.getShtrihCode());
         return view;
     }
 }

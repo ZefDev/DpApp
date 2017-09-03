@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
     TaskFragment taskFragment;
     ActivFragment activFragment;
     FloatingActionButton fab;
-
+    Toolbar toolbar;
 //    private void init () {
 //
 //    }
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity
         dbHelper = new DBHelper(this);
         dbHelper.create_db();
         dbHelper.open();
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Auth = getIntent();
         taskFragment = new TaskFragment();
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         Menu nav_Menu = navigationView.getMenu();
-        if(AppConfig.rights.equals ("Контрагент")) {
+        if(AppConfig.rights.equals ("Контрагент") | AppConfig.rights.equals ("Контрагент_пользователь")) {
             nav_Menu.findItem(R.id.tasks).setVisible(false);
             nav_Menu.findItem(R.id.nav_slideshow).setVisible(false);
             nav_Menu.findItem(R.id.documents).setVisible(false);
@@ -105,14 +105,20 @@ public class MainActivity extends AppCompatActivity
         textLogin.setText(AppConfig.User);
         textContractor.setText(AppConfig.Contractor);
         ImageView ico = (ImageView) findViewById(R.id.imageView);
-        if(AppConfig.rights.equals("Контрагент")) {
+        if(AppConfig.rights.equals ("Контрагент") | AppConfig.rights.equals ("Контрагент_пользователь")) {
             ico.setImageResource(R.drawable.dp_ico_contractor);
         }
         else if(AppConfig.rights.equals("Техник")){
             ico.setImageResource(R.drawable.dp_ico_tecnick);
+            runFragment("TaskFragment");
+            fab.setVisibility(View.INVISIBLE);
+            toolbar.setTitle(R.string.title_activity_task);
         }
         else {
             ico.setImageResource(R.drawable.dp_ico_admin);
+            runFragment("TaskFragment");
+            fab.setVisibility(View.INVISIBLE);
+            toolbar.setTitle(R.string.title_activity_task);
         }
         return true;
     }
@@ -128,7 +134,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(setting);
         }
         else if(id == R.id.action_filter){
-            Intent filter= new Intent(MainActivity.this,)
+            Intent filter= new Intent(MainActivity.this,Filter.class);
+            startActivity(filter);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -147,7 +154,7 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.activs) {
             runFragment("ActivFragment");
-            if (!AppConfig.rights.equals("Контрагент")) {
+            if (!AppConfig.rights.equals ("Контрагент") & !AppConfig.rights.equals ("Контрагент_пользователь")) {
                 fab.setVisibility(View.VISIBLE);
             }
         } else if (id == R.id.nav_slideshow) {
@@ -204,7 +211,7 @@ public class MainActivity extends AppCompatActivity
                 fab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(AppConfig.rights.equals("Контрагент")){
+                        if(AppConfig.rights.equals ("Контрагент") | AppConfig.rights.equals ("Контрагент_пользователь")){
                             intent = new Intent(MainActivity.this, OtchetActivity.class);
                         }
                         else {

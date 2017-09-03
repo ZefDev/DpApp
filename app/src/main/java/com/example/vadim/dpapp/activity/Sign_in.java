@@ -71,7 +71,7 @@ public class Sign_in extends Activity {
             finish();
         }
         else {
-            //restController.getUser();
+            restController.getUser();//restController.connectionProblem("req_get_user",0);//restController.getUser();
         }
 
     }

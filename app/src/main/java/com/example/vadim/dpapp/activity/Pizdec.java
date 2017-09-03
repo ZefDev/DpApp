@@ -13,8 +13,10 @@ import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 
 import com.example.vadim.dpapp.R;
 import com.example.vadim.dpapp.application.CameraPreview;
+import com.example.vadim.dpapp.application.RESTController;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -38,6 +41,7 @@ import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 
+import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -59,6 +63,8 @@ public class Pizdec extends Activity {
     private Image codeImage;
     private Button repeat;
     private Button contin;
+    public RESTController restController;
+    private String nameActiv,shtrihCode;
 
     static {
       //  if(android.os.Build.VERSION.SDK_INT >= 23) {
@@ -83,6 +89,7 @@ public class Pizdec extends Activity {
         shtrihLayout = (RelativeLayout) findViewById(R.id.shtrih_layout_id);
         tvShtrih = (TextView) findViewById(R.id.tvShtrihCode);
         ivShtrih = (ImageView) findViewById(R.id.ivShtrihCode);
+        restController = new RESTController(this,Pizdec.class.getSimpleName());
         /* Instance barcode scanner */
         scanner = new ImageScanner();
         scanner.setConfig(0, Config.X_DENSITY, 3);
@@ -90,7 +97,14 @@ public class Pizdec extends Activity {
         contin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent =  new Intent();
+                Intent intent =  getIntent();
+                intent.putExtra("shtrihCode",tvShtrih.getText().toString());
+                if(nameActiv==null) {
+                    intent.putExtra("nameActiv", intent.getStringExtra("nameActiv"));
+                }
+                else {
+                    intent.putExtra("nameActiv", nameActiv);
+                }
                 setResult(RESULT_OK, intent);
                 ElementActivity.shtrihhh=tvShtrih.getText().toString();
                 finish();
@@ -214,7 +228,9 @@ public class Pizdec extends Activity {
                     if ((lastScannedCode != null)&(!barcodeScanned)) {
                         shtrihLayout.setVisibility(View.VISIBLE);
                         tvShtrih.setText(lastScannedCode);
-                        //ivShtrih.setImageBitmap(getResources().getDrawable(getDrawable(R.drawable.nophoto)));
+                        restController.getActiv(null,null,lastScannedCode);
+
+                        //ivShtrih.setImageBitmap(getResources().getDrawable(getDrawable(R.drawable.nophoto)));<--
                         barcodeScanned = true;
                     }
                 }
@@ -226,7 +242,7 @@ public class Pizdec extends Activity {
     // Mimic continuous auto-focusing
     final AutoFocusCallback autoFocusCB = new AutoFocusCallback() {
         public void onAutoFocus(boolean success, Camera camera) {
-            autoFocusHandler.postDelayed(doAutoFocus, 1000);
+            autoFocusHandler.postDelayed(doAutoFocus, 5000);
         }
     };
 
@@ -249,6 +265,9 @@ public class Pizdec extends Activity {
      * @return Bitmap image with code
      * @throws WriterException exception
      */
+
+
+
     private Bitmap encodeAsBitmap(String code, BarcodeFormat format, int img_width, int img_height) throws WriterException {
         if (code == null) {
             return null;
@@ -316,6 +335,16 @@ public class Pizdec extends Activity {
                 break;
             }
         }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        if (imageReturnedIntent!= null) {
+            shtrihCode = imageReturnedIntent.getStringExtra("shtrihCode");
+            nameActiv= imageReturnedIntent.getStringExtra("nameActiv");
+            return;
+        }
+
     }
 
 }

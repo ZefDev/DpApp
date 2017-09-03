@@ -3,11 +3,15 @@ package com.example.vadim.dpapp.activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +25,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -34,26 +40,30 @@ import com.example.vadim.dpapp.containers.CompliteTaskContainer;
 import com.example.vadim.dpapp.containers.OTaskContainer;
 import com.example.vadim.dpapp.containers.TaskContainer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
 
 public class TaskActivity extends AppCompatActivity {
 
-    TextView editCode,editName,editContractor,editDate;
-    Button newOTask;
-    CheckBox checkComplite;
+    TextView editCode,editName,editContractor,editDate,editTypeTask,textView24;
+    Spinner spinnerDirectoryUser;
+    CheckBox checkComplite,checkIsApproved;
     ListView listViewOTask,listTask;
     DBHelper dbHelper;
-    Button buttonSave,fabTask;
-    String code,name,contractor,Date;
+    Button buttonSave,fabTask,addActiv,newOTask;
+    String code,name,contractor,Date,typeTask,isApproved,waypoint,nextExecuter;
     TaskContainer taskContainer;
     RESTController rest;
     OTaskAdapter a;
     CompliteTaskAdapter b;
     ArrayList<OTaskContainer> arrayList;
     ArrayList<CompliteTaskContainer> listCompliteTask;
+    LinearLayout layoutIsApproved;
     Context context;
+    Intent scannerIntent;
+    EditText shtrihCode,nameActiv;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,18 +97,28 @@ public class TaskActivity extends AppCompatActivity {
         editName = (TextView) findViewById(R.id.editNameTask);
         editContractor = (TextView) findViewById(R.id.editContractorTask);
         editDate = (TextView) findViewById(R.id.editDateTask);
+        editTypeTask = (TextView) findViewById(R.id.editTypeTask);
         newOTask = (Button) findViewById(R.id.addCompliteTask);
-
+        addActiv = (Button) findViewById(R.id.addActiv);
+        spinnerDirectoryUser = (Spinner) findViewById(R.id.spinnerDirectoryUser);
         checkComplite = (CheckBox) findViewById(R.id.CompliteTask);
+        checkIsApproved =  (CheckBox) findViewById(R.id.checkBox2);
+        layoutIsApproved = (LinearLayout) findViewById(R.id.layoutIsApproved);
+        textView24 = (TextView) findViewById(R.id.textView24);
         InitializationVariable();
+
         buttonSave = (Button) findViewById(R.id.bSaveTask);
         fabTask = (Button) findViewById(R.id.fabTask);
         listViewOTask = (ListView) findViewById(R.id.listViewOTask);
         listTask = (ListView) findViewById(R.id.listViewCompliteTask);
+
         editCode.setText(code);
         editName.setText(name);
         editContractor.setText(contractor);
         editDate.setText(Date);
+        editTypeTask.setText(typeTask);
+
+        //scannerIntent = new Intent(TaskActivity.this, ElementActivity.class);
 
         arrayList = dbHelper.getAllOTask(code);
         listCompliteTask = dbHelper.getAllCompliteTask(code);
@@ -119,6 +139,12 @@ public class TaskActivity extends AppCompatActivity {
         }
         registerForContextMenu(listTask);
         //listViewOTask
+        addActiv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShowDialogAddDescriptionTask(true,0);
+            }
+        });
 
         rest = new RESTController(this,TaskActivity.class.getSimpleName());
         buttonSave.setOnClickListener(new View.OnClickListener() {
@@ -132,11 +158,25 @@ public class TaskActivity extends AppCompatActivity {
                 else{
                     isComplite = "Нет";
                 }
-                rest.sendTask(code, name, contractor, Date, isComplite,listCompliteTask);
+                if(String.valueOf(checkIsApproved.isChecked())=="true") {
+                    isApproved = "Да";
+                }
+                else{
+                    isApproved = "Нет";
+                }
+                if(layoutIsApproved.getVisibility()==View.VISIBLE) {
+                    nextExecuter = "";
+                }
+                else
+                {
+                    nextExecuter = spinnerDirectoryUser.getSelectedItem().toString();
+                }
+                rest.sendTask(code, name, contractor, Date, isComplite,listCompliteTask,typeTask, isApproved,waypoint,nextExecuter);
                 dbHelper.remove(code,"Code","Task");
                 finish();
             }
         });
+        rest.getDirectoryUser(spinnerDirectoryUser);
     }
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
@@ -178,6 +218,20 @@ public class TaskActivity extends AppCompatActivity {
         name = getIntent().getStringExtra("nameTask");
         contractor = getIntent().getStringExtra("contractorTask");
         Date = getIntent().getStringExtra("dateTask");
+        ArrayList<TaskContainer> tasks =  dbHelper.getAllTasks(code);
+        typeTask = tasks.get(0).getTypeTask();
+        isApproved = tasks.get(0).getIsApproved();
+        waypoint = tasks.get(0).getWaypoint();
+        if (waypoint.equals("Проверка автором") && waypoint !=null){
+            textView24.setText("Одобрено");
+            spinnerDirectoryUser.setVisibility(View.GONE);
+            layoutIsApproved.setVisibility(View.VISIBLE);
+        }
+        else {
+            textView24.setText("Следующий исполнитель");
+            spinnerDirectoryUser.setVisibility(View.VISIBLE);
+            layoutIsApproved.setVisibility(View.GONE);
+        }
     }
     public void SaveChanges(){
         code = editCode.getText().toString();
@@ -192,6 +246,8 @@ public class TaskActivity extends AppCompatActivity {
         String date = data.getStringExtra("date");
         String complteOTask = data.getStringExtra("complteOTask");
         String time = data.getStringExtra("time");
+        shtrihCode.setText(data.getStringExtra("shtrihCode"));
+        nameActiv.setText(data.getStringExtra("nameActiv"));
         dbHelper.addCompliteTask(new CompliteTaskContainer(1,date,complteOTask,time,code,""),listCompliteTask.size()+1);
         listCompliteTask = dbHelper.getAllCompliteTask(code);
         b = new CompliteTaskAdapter(this,listCompliteTask);
@@ -263,5 +319,65 @@ public class TaskActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void ShowDialogAddDescriptionTask(final boolean isCreate, final int position){
+        final AlertDialog.Builder ratingdialog = new AlertDialog.Builder(this);
+        ratingdialog.setIcon(android.R.drawable.btn_star_big_on);
+        ratingdialog.setTitle("Описание работы");
+
+        View linearlayout = getLayoutInflater().inflate(R.layout.dialog_description_task, null);
+        ratingdialog.setView(linearlayout);
+        nameActiv = (EditText) linearlayout.findViewById(R.id.nameActiv);
+        shtrihCode = (EditText) linearlayout.findViewById(R.id.shtrihCode);
+        final EditText descriptionWork = (EditText) linearlayout.findViewById(R.id.descriptionWork);
+        Button openScan = (Button) linearlayout.findViewById(R.id.openScan);
+        //Button addCompliteTask = (Button) linearlayout.findViewById(R.id.addCompliteTask);
+        /*if(!isCreate) {
+            complteOTask.setText(listCompliteTask.get(position).getCompliteTask());
+            time.setText(listCompliteTask.get(position).getTime());
+        }*/
+        final Dialog dialog =  ratingdialog.create();
+        dialog.show();
+        openScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //startActivity(windowAddActiv);
+                scannerIntent = new Intent(TaskActivity.this, Pizdec.class);
+                startActivityForResult(scannerIntent, 2);
+            }
+        });
+        /*addCompliteTask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean flag = true;
+                if(nameActiv.getText().toString().equals("")){
+                    nameActiv.setHint("Заполните поле!");
+                    nameActiv.setHintTextColor(Color.RED);
+                    flag = false;
+                }
+                if(shtrihCode.getText().toString().equals("")){
+                    shtrihCode.setHint("Введите наименование!");
+                    shtrihCode.setHintTextColor(Color.RED);
+                    flag = false;
+                }
+                if(shtrihCode.getText().toString().equals("")){
+                    shtrihCode.setHint("Считайте штрих-код!");
+                    shtrihCode.setHintTextColor(Color.RED);
+                    flag = false;
+                }
+                /*if(flag==true) {
+                    if(isCreate)
+                        dbHelper.addCompliteTask(new CompliteTaskContainer(position, date, complteOTask.getText().toString(), time.getText().toString(), code, ""),listCompliteTask.size()+1);
+                    else
+                        dbHelper.updateCompliteTaskS(position,(new CompliteTaskContainer(position, date, complteOTask.getText().toString(), time.getText().toString(), code, "")));
+                    listCompliteTask = dbHelper.getAllCompliteTask(code);
+                    b = new CompliteTaskAdapter(context, listCompliteTask);
+                    b.notifyDataSetChanged();
+                    listTask.setAdapter(b);
+                    dialog.dismiss();
+                }
+            }
+        });*/
     }
 }

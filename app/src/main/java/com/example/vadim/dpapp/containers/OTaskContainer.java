@@ -7,11 +7,22 @@ public class OTaskContainer {
     private String codeTask;
     private String time;
 
-    public OTaskContainer( int code,String codeTask,String codeActiv, String opisanie ) {
+    public String getShtrihCode() {
+        return shtrihCode;
+    }
+
+    public void setShtrihCode(String shtrihCode) {
+        this.shtrihCode = shtrihCode;
+    }
+
+    private String shtrihCode;
+
+    public OTaskContainer( int code,String codeTask,String codeActiv, String opisanie,String time,String shtrihCode ) {
         this.code = code;
         this.codeTask = codeTask;
         this.opisanie = opisanie;
         this.codeActiv = codeActiv;
+        this.shtrihCode = shtrihCode;
     }
 
     public OTaskContainer( int code,String codeTask,String codeActiv, String opisanie,String time ) {
